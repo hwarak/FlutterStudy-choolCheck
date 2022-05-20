@@ -118,6 +118,8 @@ class _CustomGoogleMap extends StatelessWidget {
         initialCameraPosition:
             initialPosition, // 구글 지도를 처음 실행했을때 어떤 위치를 바라보고 있을지
         mapType: MapType.normal, // 높낮이가 표시가 됨
+        myLocationEnabled: true,
+        myLocationButtonEnabled: false,
       ),
     );
   }
