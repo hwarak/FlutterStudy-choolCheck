@@ -10,6 +10,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  bool choolCheckDone = false;
+
   // latitude - 위도, longitude - 경도
   static final LatLng companyLatLng = LatLng(37.501520, 126.787560);
 
@@ -105,14 +107,17 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         _CustomGoogleMap(
                           initialPosition: initialPosition,
-                          circle: isWithinrange
-                              ? withinDistanceCircle
-                              : notwithinDistanceCircle,
+                          circle: choolCheckDone
+                              ? checkDoneCircle
+                              : isWithinrange
+                                  ? withinDistanceCircle
+                                  : notwithinDistanceCircle,
                           marker: marker,
                         ),
                         _ChoolCheckButton(
                           isWithinrange: isWithinrange,
                           onPressed: onChoolCheckPressed,
+                          choolCheckDone: choolCheckDone,
                         ),
                       ],
                     );
@@ -153,6 +158,13 @@ class _HomeScreenState extends State<HomeScreen> {
         );
       },
     );
+
+    if (result) {
+      // 출근하기 버튼을 누름 -> result에 true가 담김
+      setState(() {
+        choolCheckDone = true;
+      });
+    }
   }
 
   // 권한과 관련된 모든 기능은 async로 작업해야해
@@ -233,8 +245,12 @@ class _CustomGoogleMap extends StatelessWidget {
 class _ChoolCheckButton extends StatelessWidget {
   final bool isWithinrange;
   final VoidCallback onPressed;
+  final bool choolCheckDone;
   const _ChoolCheckButton(
-      {Key? key, required this.isWithinrange, required this.onPressed})
+      {Key? key,
+      required this.isWithinrange,
+      required this.onPressed,
+      required this.choolCheckDone})
       : super(key: key);
 
   @override
@@ -246,12 +262,16 @@ class _ChoolCheckButton extends StatelessWidget {
           Icon(
             Icons.timelapse_outlined,
             size: 50.0,
-            color: isWithinrange ? Colors.blue : Colors.red,
+            color: choolCheckDone
+                ? Colors.green
+                : isWithinrange
+                    ? Colors.blue
+                    : Colors.red,
           ),
           const SizedBox(
             height: 20.0,
           ),
-          if (isWithinrange)
+          if (!choolCheckDone && isWithinrange)
             TextButton(
               // 출근할수 있는 위치에 있으면 보이고 없으면 안보이게끔 할 수 있어!
               onPressed: onPressed,
