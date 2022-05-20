@@ -23,11 +23,36 @@ class _HomeScreenState extends State<HomeScreen> {
     return SafeArea(
       child: Scaffold(
         appBar: renderAppBar(),
-        body: Column(
-          children: [
-            _CustomGoogleMap(initialPosition: initialPosition),
-            _ChoolCheckButton(),
-          ],
+        body: FutureBuilder(
+          // Future를 리턴해주는 어떤 함수든 넣어줄 수 있다,
+          // 그리고 함수의 상태가 변경될때마다(ex. 로딩중이거나, 로딩이 끝났거나)
+          // builder를 다시 실행해서  화면을 다시 그려줄 수 있다
+          // 그리고 future가 리턴해준 값을 snapshot에서 받아 볼 수 있다.
+          future: checkPermission(),
+          builder: (BuildContext context, AsyncSnapshot snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              // 로딩 상태
+              return Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+
+            // 로딩이 끝나서 데이터를 받았어
+            // 받은 데이터가 이거와 같다면! 리턴해줘
+            if (snapshot.data == '위치 권한이 허가되었습니다.') {
+              return Column(
+                children: [
+                  _CustomGoogleMap(initialPosition: initialPosition),
+                  _ChoolCheckButton(),
+                ],
+              );
+            }
+
+            // 그게 아니라면 그냥 메세지를 화면 가운데다 띄우자
+            return Center(
+              child: Text(snapshot.data),
+            );
+          },
         ),
       ),
     );
