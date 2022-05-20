@@ -19,7 +19,7 @@ class _HomeScreenState extends State<HomeScreen> {
     zoom: 15, // 작을수록 멀리! 클수록 가깝게
   );
 
-  static final double distance = 100;
+  static final double okDistance = 100;
 
   static final Circle withinDistanceCircle = Circle(
     // 화면에 여러개의 동그라미르르 그렸을때
@@ -28,7 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
     center: companyLatLng, // 회사를 중심으로 하겠다!
     fillColor: Colors.blue.withOpacity(0.5), // 원의 내부 색깔
     radius:
-        distance, // 반지름(반경), 출석 체크를 할 수 있는 미터 수, 미터기준으로 받게 됩니다 !!! , 반지름이 100m
+        okDistance, // 반지름(반경), 출석 체크를 할 수 있는 미터 수, 미터기준으로 받게 됩니다 !!! , 반지름이 100m
     strokeColor: Colors.blue, //  원의 둘레 색깔
     strokeWidth: 1, // 둘레를 어느정도의 두께로 할건지
   );
@@ -37,7 +37,7 @@ class _HomeScreenState extends State<HomeScreen> {
     circleId: CircleId('notwithinDistanceCircle'),
     center: companyLatLng,
     fillColor: Colors.red.withOpacity(0.5),
-    radius: distance,
+    radius: okDistance,
     strokeColor: Colors.red,
     strokeWidth: 1,
   );
@@ -46,7 +46,7 @@ class _HomeScreenState extends State<HomeScreen> {
     circleId: CircleId('checkDoneCircle'),
     center: companyLatLng,
     fillColor: Colors.green.withOpacity(0.5),
-    radius: distance,
+    radius: okDistance,
     strokeColor: Colors.green,
     strokeWidth: 1,
   );
@@ -60,7 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return SafeArea(
       child: Scaffold(
         appBar: renderAppBar(),
-        body: FutureBuilder(
+        body: FutureBuilder<String>(
           // Future를 리턴해주는 어떤 함수든 넣어줄 수 있다,
           // 그리고 함수의 상태가 변경될때마다(ex. 로딩중이거나, 로딩이 끝났거나)
           // builder를 다시 실행해서  화면을 다시 그려줄 수 있다
@@ -77,16 +77,43 @@ class _HomeScreenState extends State<HomeScreen> {
             // 로딩이 끝나서 데이터를 받았어
             // 받은 데이터가 이거와 같다면! 리턴해줘
             if (snapshot.data == '위치 권한이 허가되었습니다.') {
-              return Column(
-                children: [
-                  _CustomGoogleMap(
-                    initialPosition: initialPosition,
-                    circle: withinDistanceCircle,
-                    marker: marker,
-                  ),
-                  _ChoolCheckButton(),
-                ],
-              );
+              return StreamBuilder<Position>(
+                  stream: Geolocator.getPositionStream(),
+                  builder: (context, snapshot) {
+                    // 기본값은 true이지만 내 위치가 반경 100m 안에 있다면 true로 해주자
+                    bool isWithinrange = false;
+                    if (snapshot.hasData) {
+                      // 만약 데이터가 있다면 실행한다
+                      // 거리를 측정할 첫번째 데이터, 느낌표를 붙힌 이유는 snapshot.hasData가 true이기 때문이지
+                      // 지금 여기서 snapshot.data는 내 현재 위치를 Position으로 클래스로 표시한것
+                      final start = snapshot.data!;
+                      final end = companyLatLng; // 회사 위치를 넣어주자
+
+                      final distance = Geolocator.distanceBetween(
+                        start.latitude,
+                        start.longitude,
+                        end.latitude,
+                        end.longitude,
+                      );
+
+                      if (distance < okDistance) {
+                        //  나랑 회사의 거리가 100m보다 작다면
+                        isWithinrange = true;
+                      }
+                    }
+                    return Column(
+                      children: [
+                        _CustomGoogleMap(
+                          initialPosition: initialPosition,
+                          circle: isWithinrange
+                              ? withinDistanceCircle
+                              : notwithinDistanceCircle,
+                          marker: marker,
+                        ),
+                        _ChoolCheckButton(),
+                      ],
+                    );
+                  });
             }
 
             // 그게 아니라면 그냥 메세지를 화면 가운데다 띄우자
