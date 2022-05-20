@@ -18,6 +18,20 @@ class _HomeScreenState extends State<HomeScreen> {
     target: companyLatLng, // target엔 위도와 경도를 넣어주면 됨
     zoom: 15, // 작을수록 멀리! 클수록 가깝게
   );
+
+  static final double distance = 100;
+
+  static final Circle circle = Circle(
+    // 화면에 여러개의 동그라미르르 그렸을때
+    // 한 동그라미와 다른 동그라미를 구분할 수 있게된다.
+    circleId: CircleId('circle'),
+    center: companyLatLng, // 회사를 중심으로 하겠다!
+    fillColor: Colors.blue.withOpacity(0.5), // 원의 내부 색깔
+    radius:
+        distance, // 반지름(반경), 출석 체크를 할 수 있는 미터 수, 미터기준으로 받게 됩니다 !!! , 반지름이 100m
+    strokeColor: Colors.blue, //  원의 둘레 색깔
+    strokeWidth: 1, // 둘레를 어느정도의 두께로 할건지
+  );
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -42,7 +56,10 @@ class _HomeScreenState extends State<HomeScreen> {
             if (snapshot.data == '위치 권한이 허가되었습니다.') {
               return Column(
                 children: [
-                  _CustomGoogleMap(initialPosition: initialPosition),
+                  _CustomGoogleMap(
+                    initialPosition: initialPosition,
+                    circle: circle,
+                  ),
                   _ChoolCheckButton(),
                 ],
               );
@@ -107,7 +124,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
 class _CustomGoogleMap extends StatelessWidget {
   final CameraPosition initialPosition;
-  const _CustomGoogleMap({Key? key, required this.initialPosition})
+  final Circle circle;
+  const _CustomGoogleMap(
+      {Key? key, required this.initialPosition, required this.circle})
       : super(key: key);
 
   @override
@@ -120,6 +139,7 @@ class _CustomGoogleMap extends StatelessWidget {
         mapType: MapType.normal, // 높낮이가 표시가 됨
         myLocationEnabled: true,
         myLocationButtonEnabled: false,
+        circles: Set.from([circle]), // Set로 값이 들어가서 중복체크를 해줌.
       ),
     );
   }
