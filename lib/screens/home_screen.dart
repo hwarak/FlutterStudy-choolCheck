@@ -11,6 +11,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   bool choolCheckDone = false;
+  GoogleMapController? mapController; // ?는 생성이 된 다음에 정의할 수 있기 때문이다
 
   // latitude - 위도, longitude - 경도
   static final LatLng companyLatLng = LatLng(37.501520, 126.787560);
@@ -113,6 +114,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ? withinDistanceCircle
                                   : notwithinDistanceCircle,
                           marker: marker,
+                          onMapCreated: onMapCreated,
                         ),
                         _ChoolCheckButton(
                           isWithinrange: isWithinrange,
@@ -132,6 +134,10 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+  }
+
+  onMapCreated(GoogleMapController controller) {
+    mapController = controller;
   }
 
   void onChoolCheckPressed() async {
@@ -210,6 +216,24 @@ class _HomeScreenState extends State<HomeScreen> {
         style: TextStyle(color: Colors.blue, fontWeight: FontWeight.w700),
       ),
       backgroundColor: Colors.white,
+      actions: [
+        IconButton(
+          onPressed: () async {
+            if (mapController == null) {
+              return;
+            }
+
+            final location = await Geolocator.getCurrentPosition();
+
+            mapController!.animateCamera(
+              CameraUpdate.newLatLng(
+                  LatLng(location.latitude, location.longitude)),
+            );
+          },
+          icon: Icon(Icons.my_location),
+          color: Colors.blue,
+        ),
+      ],
     );
   }
 }
@@ -218,12 +242,14 @@ class _CustomGoogleMap extends StatelessWidget {
   final CameraPosition initialPosition;
   final Circle circle;
   final Marker marker;
-  const _CustomGoogleMap(
-      {Key? key,
-      required this.initialPosition,
-      required this.circle,
-      required this.marker})
-      : super(key: key);
+  final MapCreatedCallback onMapCreated;
+  const _CustomGoogleMap({
+    Key? key,
+    required this.initialPosition,
+    required this.circle,
+    required this.marker,
+    required this.onMapCreated,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -237,6 +263,7 @@ class _CustomGoogleMap extends StatelessWidget {
         myLocationButtonEnabled: false,
         circles: Set.from([circle]), // Set로 값이 들어가서 중복체크를 해줌.
         markers: Set.from([marker]),
+        onMapCreated: onMapCreated,
       ),
     );
   }
