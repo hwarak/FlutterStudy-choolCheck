@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -30,6 +31,41 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+  }
+
+  // 권한과 관련된 모든 기능은 async로 작업해야해
+  // 권한 요청을 하고서 유저의 input을 기다리기때문에
+  // 미래의 값으로 작업을 하는것이기 때문에 모두 async로 작업하겠디
+  Future<String> checkPermission() async {
+    // Geolocator.isLocationServiceEnabled() : 핸드폰 기기 자체의 로케이션 서비스가 활성화 되어있는지 확인하는거임
+    final isLocationEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!isLocationEnabled) {
+      // isLocationEnabled이 false라면 == 로케이션 서비스가 꺼져있다면
+      return '위치 서비스를 활성화해주세요.';
+    }
+
+    // Geolocator.checkPermission() : 현재 앱이 갖고있는 위치서비스에 대한 권한이 어떻게 되는지
+    // LocationPermission 형태로 가져올 수 있다.
+
+    LocationPermission checkedPermission = await Geolocator.checkPermission();
+
+    if (checkedPermission == LocationPermission.denied) {
+      // 만약 현재 앱이 갖고있는 위치서비스에 대한 권한이 denied라면
+      // 권한 요청을 보내야한다.
+      checkedPermission = await Geolocator.requestPermission();
+
+      if (checkedPermission == LocationPermission.denied) {
+        // 여전히 denied 상태라면 에러 메세지를 보낸다
+        return '위치 권한을 허가해주세요.';
+      }
+    }
+    if (checkedPermission == LocationPermission.deniedForever) {
+      // 거절한 상태라면
+      return '앱의 위치 권한을 설정에서 허가해주세요.';
+    }
+
+    // 여기까지 통과했다면 권한(whileInUse or always)이 있는거임 !!!!!!
+    return '위치 권한이 허가되었습니다.';
   }
 
   AppBar renderAppBar() {
