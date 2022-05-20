@@ -69,7 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
           builder: (BuildContext context, AsyncSnapshot snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               // 로딩 상태
-              return Center(
+              return const Center(
                 child: CircularProgressIndicator(),
               );
             }
@@ -110,7 +110,10 @@ class _HomeScreenState extends State<HomeScreen> {
                               : notwithinDistanceCircle,
                           marker: marker,
                         ),
-                        _ChoolCheckButton(),
+                        _ChoolCheckButton(
+                          isWithinrange: isWithinrange,
+                          onPressed: onChoolCheckPressed,
+                        ),
                       ],
                     );
                   });
@@ -123,6 +126,32 @@ class _HomeScreenState extends State<HomeScreen> {
           },
         ),
       ),
+    );
+  }
+
+  void onChoolCheckPressed() async {
+    final result = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('출근하기'),
+          content: Text('출근을 하시겠습니까?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(false);
+              },
+              child: Text('취소'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+              child: Text('출근하기'),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -202,12 +231,34 @@ class _CustomGoogleMap extends StatelessWidget {
 }
 
 class _ChoolCheckButton extends StatelessWidget {
-  const _ChoolCheckButton({Key? key}) : super(key: key);
+  final bool isWithinrange;
+  final VoidCallback onPressed;
+  const _ChoolCheckButton(
+      {Key? key, required this.isWithinrange, required this.onPressed})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: Text('출근'),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.timelapse_outlined,
+            size: 50.0,
+            color: isWithinrange ? Colors.blue : Colors.red,
+          ),
+          const SizedBox(
+            height: 20.0,
+          ),
+          if (isWithinrange)
+            TextButton(
+              // 출근할수 있는 위치에 있으면 보이고 없으면 안보이게끔 할 수 있어!
+              onPressed: onPressed,
+              child: const Text('출근하기'),
+            ),
+        ],
+      ),
     );
   }
 }
