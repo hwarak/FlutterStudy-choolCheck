@@ -32,6 +32,10 @@ class _HomeScreenState extends State<HomeScreen> {
     strokeColor: Colors.blue, //  원의 둘레 색깔
     strokeWidth: 1, // 둘레를 어느정도의 두께로 할건지
   );
+  static final Marker marker = Marker(
+    markerId: MarkerId('marker'),
+    position: companyLatLng,
+  );
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -59,6 +63,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   _CustomGoogleMap(
                     initialPosition: initialPosition,
                     circle: circle,
+                    marker: marker,
                   ),
                   _ChoolCheckButton(),
                 ],
@@ -125,8 +130,12 @@ class _HomeScreenState extends State<HomeScreen> {
 class _CustomGoogleMap extends StatelessWidget {
   final CameraPosition initialPosition;
   final Circle circle;
+  final Marker marker;
   const _CustomGoogleMap(
-      {Key? key, required this.initialPosition, required this.circle})
+      {Key? key,
+      required this.initialPosition,
+      required this.circle,
+      required this.marker})
       : super(key: key);
 
   @override
@@ -140,6 +149,7 @@ class _CustomGoogleMap extends StatelessWidget {
         myLocationEnabled: true,
         myLocationButtonEnabled: false,
         circles: Set.from([circle]), // Set로 값이 들어가서 중복체크를 해줌.
+        markers: Set.from([marker]),
       ),
     );
   }
