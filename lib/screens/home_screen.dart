@@ -21,10 +21,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   static final double distance = 100;
 
-  static final Circle circle = Circle(
+  static final Circle withinDistanceCircle = Circle(
     // 화면에 여러개의 동그라미르르 그렸을때
     // 한 동그라미와 다른 동그라미를 구분할 수 있게된다.
-    circleId: CircleId('circle'),
+    circleId: CircleId('withinDistanceCircle'),
     center: companyLatLng, // 회사를 중심으로 하겠다!
     fillColor: Colors.blue.withOpacity(0.5), // 원의 내부 색깔
     radius:
@@ -32,6 +32,25 @@ class _HomeScreenState extends State<HomeScreen> {
     strokeColor: Colors.blue, //  원의 둘레 색깔
     strokeWidth: 1, // 둘레를 어느정도의 두께로 할건지
   );
+
+  static final Circle notwithinDistanceCircle = Circle(
+    circleId: CircleId('notwithinDistanceCircle'),
+    center: companyLatLng,
+    fillColor: Colors.red.withOpacity(0.5),
+    radius: distance,
+    strokeColor: Colors.red,
+    strokeWidth: 1,
+  );
+
+  static final Circle checkDoneCircle = Circle(
+    circleId: CircleId('checkDoneCircle'),
+    center: companyLatLng,
+    fillColor: Colors.green.withOpacity(0.5),
+    radius: distance,
+    strokeColor: Colors.green,
+    strokeWidth: 1,
+  );
+
   static final Marker marker = Marker(
     markerId: MarkerId('marker'),
     position: companyLatLng,
@@ -62,7 +81,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   _CustomGoogleMap(
                     initialPosition: initialPosition,
-                    circle: circle,
+                    circle: withinDistanceCircle,
                     marker: marker,
                   ),
                   _ChoolCheckButton(),
